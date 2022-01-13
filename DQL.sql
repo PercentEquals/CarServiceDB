@@ -17,3 +17,4 @@ ON S.workshop_id = W.workshop_id
 LEFT JOIN adresses A
 ON A.adress_id = W.adress_id
 
+USE master;
