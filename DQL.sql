@@ -62,5 +62,44 @@ HAVING COUNT(V.vehicle_id) > 1
 -- 8. SELECT CLIENTS THAT HAVE MULTIPLE INSPECTIONS SCHEDULED
 -- TODO
 
+-- Functions
+
+
+
+-- Procedures
+
+GO
+IF EXISTS(SELECT 1 FROM sys.objects WHERE type='P' AND name='create_schedule') DROP PROCEDURE create_schedule
+
+GO
+CREATE PROCEDURE create_schedule 
+	@station INT = 0,
+	@datestart DATE,
+	@dateend DATE,
+	@starting_time TIME,
+	@ending_time TIME,
+	@is_excluding INT = 0
+AS
+BEGIN
+	WITH dateRange AS (
+		SELECT @datestart AS d
+		UNION ALL
+		SELECT DATEADD(day, 1, d)
+		FROM dateRange
+		WHERE DATEADD(day, 1, d) <= @dateend
+	)
+
+	INSERT INTO schedule
+	SELECT @station,
+		   (CAST(d AS DATETIME) + CAST(@starting_time AS DATETIME)) AS [startdate], 
+		   (CAST(d AS DATETIME) + CAST(@ending_time AS DATETIME)) AS [enddate],
+		   @is_excluding
+		   FROM dateRange OPTION (MAXRECURSION 0)
+END
+GO
+
+BEGIN
+	EXEC create_schedule 2, '20220101', '20220301', '08:30:00.00', '16:30:00.00'
+END
 
 USE master;
