@@ -1,3 +1,6 @@
+USE CarService;
+
+SET IDENTITY_INSERT adresses ON;
 INSERT INTO adresses (adress_id, street, city, zip) VALUES
 (1, 'Okopowa 88A/67', 'Sieradz', '69-933'),
 (2, 'Gdyńska 23', 'Żyrardów', '87-223'),
@@ -49,7 +52,9 @@ INSERT INTO adresses (adress_id, street, city, zip) VALUES
 (48, 'Granitowa 04A', 'Leszno', '77-284'),
 (49, 'Warmińska 67', 'Bartoszyce', '82-131'),
 (50, 'Kusocińskiego Janusza 45A/08', 'Starogard Gdański', '11-719');
+SET IDENTITY_INSERT adresses OFF;
 
+SET IDENTITY_INSERT workshops ON;
 INSERT INTO workshops (workshop_id, adress_id) VALUES 
 (1, 41),
 (2, 42),
@@ -61,3 +66,90 @@ INSERT INTO workshops (workshop_id, adress_id) VALUES
 (8, 48),
 (9, 49),
 (10, 50);
+SET IDENTITY_INSERT workshops OFF;
+
+SET IDENTITY_INSERT employees ON;
+INSERT INTO employees (employee_id, firstname, lastname, birthdate, phone, salary, adress_id) VALUES
+(1, 'Adam', 'Kwiatkowski', '19801220 01:00:00 PM', '+48678801751', 4200, 23),
+(2, 'Tomek', 'Nowak', '19760127 01:00:00 PM', '+48389120930', 4900, 27),
+(3, 'Piotr', 'Wójcik', '19771216 01:00:00 PM', '+48334192294', 4700, 36),
+(4, 'Katarzyna', 'Kamińska', '19721126 01:00:00 PM', '+48001320395', 4700, 18),
+(5, 'Krzysztof', 'Szymański', '19730112 01:00:00 PM', '+48739757140', 3500, 27),
+(6, 'Katarzyna', 'Kaczmarek', '19910814 01:00:00 PM', '+48093425285', 3700, 8),
+(7, 'Grażyna', 'Szymańska', '19891016 01:00:00 PM', '+48565441140', 4100, 40),
+(8, 'Piotr', 'Grabowski', '19890510 01:00:00 PM', '+48995319731', 3500, 32),
+(9, 'Patryk', 'Grabowski', '19920422 01:00:00 PM', '+48780294130', 3300, 8),
+(10, 'Krzysztof', 'Mazur', '19791207 01:00:00 PM', '+48476755957', 4200, 8),
+(11, 'Jan', 'Mazur', '19900813 01:00:00 PM', '+48013478791', 4000, 11),
+(12, 'Grażyna', 'Kowalska', '19940409 01:00:00 PM', '+48678795869', 2900, 25),
+(13, 'Grażyna', 'Grabowska', '19940617 01:00:00 PM', '+48440135769', 4500, 23),
+(14, 'Klaudia', 'Kowalczyk', '19851224 01:00:00 PM', '+48824247788', 2700, 24),
+(15, 'Jan', 'Wójcik', '19711210 01:00:00 PM', '+48748569496', 4000, 37),
+(16, 'Tomek', 'Kozłowski', '19760913 01:00:00 PM', '+48388375955', 3500, 10),
+(17, 'Tomek', 'Kucharski', '19711226 01:00:00 PM', '+48557983155', 3400, 24),
+(18, 'Krystyna', 'Nowak', '19730604 01:00:00 PM', '+48586146504', 4300, 20),
+(19, 'Jan', 'Krawczyk', '19790805 01:00:00 PM', '+48505738391', 2700, 17),
+(20, 'Alicja', 'Kucharska', '19740615 01:00:00 PM', '+48985038130', 2800, 32);
+SET IDENTITY_INSERT employees OFF;
+
+SET IDENTITY_INSERT stations ON;
+INSERT INTO stations (station_id, station_number, workshop_id) VALUES 
+(1, 'ST-1', 1),
+(2, 'ST-2', 1),
+(3, 'ST-1', 2),
+(4, 'ST-2', 2),
+(5, 'ST-1', 3),
+(6, 'ST-2', 3),
+(7, 'ST-1', 4),
+(8, 'ST-2', 4),
+(9, 'ST-1', 5),
+(10, 'ST-2', 5),
+(11, 'ST-1', 6),
+(12, 'ST-2', 6),
+(13, 'ST-1', 7),
+(14, 'ST-2', 7),
+(15, 'ST-1', 8),
+(16, 'STAT-1', 8),
+(17, 'STAT-3', 8),
+(18, 'STAT-2', 8),
+(19, 'STAT-4', 8),
+(20, 'ST-1', 10),
+(21, 'ST-2', 10);
+SET IDENTITY_INSERT stations OFF;
+
+SET IDENTITY_INSERT stations_employees ON;
+INSERT INTO stations_employees (stations_employees_id, station_id, employee_id) VALUES
+(1, 1, 10),
+(2, 1, 11),
+(3, 2, 12),
+(4, 2, 13),
+(5, 3, 1),
+(6, 4, 1),
+(7, 5, 3),
+(8, 6, 3),
+(9, 7, 4),
+(10, 8, 5),
+(11, 9, 6),
+(12, 10, 7),
+(13, 11, 8),
+(14, 12, 9),
+(15, 13, 20),
+(16, 14, 19),
+(17, 15, 18),
+(18, 16, 17),
+(19, 17, 16),
+(20, 18, 15),
+(21, 19, 14);
+SET IDENTITY_INSERT stations_employees OFF;
+
+--SET IDENTITY_INSERT schedule ON;
+--SET IDENTITY_INSERT clients ON;
+--SET IDENTITY_INSERT vehicles ON;
+--SET IDENTITY_INSERT inspections ON;
+--SET IDENTITY_INSERT inspections_archive ON;
+
+--SET IDENTITY_INSERT schedule OFF;
+--SET IDENTITY_INSERT clients OFF;
+--SET IDENTITY_INSERT vehicles OFF;
+--SET IDENTITY_INSERT inspections OFF;
+--SET IDENTITY_INSERT inspections_archive OFF;

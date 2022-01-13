@@ -9,7 +9,7 @@ GO
 USE CarService;
 
 CREATE TABLE adresses (
-	adress_id INT NOT NULL PRIMARY KEY,
+	adress_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	street VARCHAR(255) NOT NULL,
 	city VARCHAR(255) NOT NULL,
 	zip VARCHAR(255) NOT NULL,
@@ -18,12 +18,12 @@ CREATE TABLE adresses (
 );
 
 CREATE TABLE workshops (
-	workshop_id INT NOT NULL PRIMARY KEY,
+	workshop_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	adress_id INT NOT NULL FOREIGN KEY REFERENCES adresses(adress_id),
 );
 
 CREATE TABLE employees (
-	employee_id INT NOT NULL PRIMARY KEY,
+	employee_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	firstname VARCHAR(255) NOT NULL,
 	lastname VARCHAR(255) NOT NULL,
 	birthdate DATE NOT NULL,
@@ -33,14 +33,19 @@ CREATE TABLE employees (
 );
 
 CREATE TABLE stations (
-	station_id INT NOT NULL PRIMARY KEY,
+	station_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	station_number VARCHAR(16) NOT NULL,
 	workshop_id INT NOT NULL FOREIGN KEY REFERENCES workshops(workshop_id),
-	employee_id INT FOREIGN KEY REFERENCES employees(employee_id),
+);
+
+CREATE TABLE stations_employees (
+	stations_employees_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	station_id INT NOT NULL FOREIGN KEY REFERENCES stations(station_id),
+	employee_id INT NOT NULL FOREIGN KEY REFERENCES employees(employee_id),
 );
 
 CREATE TABLE schedule (
-	schedule_id INT NOT NULL PRIMARY KEY,
+	schedule_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	station_id INT NOT NULL FOREIGN KEY REFERENCES stations(station_id),
 	startdate DATE NOT NULL,
 	enddate DATE NOT NULL,
@@ -48,14 +53,14 @@ CREATE TABLE schedule (
 );
 
 CREATE TABLE clients (
-	client_id INT NOT NULL PRIMARY KEY,
+	client_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	firstname VARCHAR(255) NOT NULL,
 	lastname VARCHAR(255) NOT NULL,
 	phone VARCHAR(255) NOT NULL,
 );
 
 CREATE TABLE vehicles (
-	vehicle_id INT NOT NULL PRIMARY KEY,
+	vehicle_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	client_id INT NOT NULL FOREIGN KEY REFERENCES clients(client_id),
 	vehicle_type VARCHAR(255) NOT NULL,
 	plate VARCHAR(255) NOT NULL,
@@ -72,7 +77,7 @@ CREATE TABLE inspections (
 );
 
 CREATE TABLE inspections_archive (
-	inspection_archive_id INT NOT NULL PRIMARY KEY,
+	inspection_archive_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	startdate DATE NOT NULL,
 	enddate DATE NOT NULL,
 	station_number VARCHAR(16) NOT NULL,
