@@ -130,6 +130,7 @@ INSERT INTO stations_employees (station_id, employee_id) VALUES
 (16, 17),
 (17, 16),
 (18, 15),
+(18, 14);
 (19, 14);
 
 INSERT INTO schedule (station_id, startdate, enddate, is_excluding) VALUES
@@ -152,7 +153,9 @@ INSERT INTO schedule (station_id, startdate, enddate, is_excluding) VALUES
 (1, '20220117 08:00:00 AM', '20220101 4:00:00 PM', 0),
 (1, '20220118 08:00:00 AM', '20220101 4:00:00 PM', 0),
 (1, '20220119 08:00:00 AM', '20220101 4:00:00 PM', 0),
-(1, '20220120 08:00:00 AM', '20220101 4:00:00 PM', 0);
+(1, '20220120 08:00:00 AM', '20220101 4:00:00 PM', 0),
+(1, '20230101 08:00:00 AM', '20220101 4:00:00 PM', 0),
+(1, '20240101 08:00:00 AM', '20220101 4:00:00 PM', 0);
 
 INSERT INTO clients (pesel, firstname, lastname, phone) VALUES
 ('85101824442', 'Klaudia', 'Szymańska', '+48603225201'),
@@ -264,6 +267,6 @@ INSERT INTO inspections (startdate, enddate, price, vehicle_mileage, station_id,
 ('20210101 10:00:00 AM', '20220101 11:00:00 AM', 100, 400186, 1, 1);
 
 INSERT INTO inspections_archive (startdate, enddate, price, vehicle_mileage, station_number, workshop_city, workshop_street, client_pesel, vehicle_id) VALUES
-('20200101 11:00:00 AM', '20220101 11:30:00 AM', 50, 393556, '2-ST-1', 'Zawiercie', 'Krańcowa 90A', '16143942585', 1);
+('20200101 11:00:00 AM', '20220101 11:30:00 AM', 50, 393556, '2-ST-1', 'Zawiercie', 'Krańcowa 90A', '80050223944', 1);
 
 USE master;
