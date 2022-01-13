@@ -13,6 +13,8 @@ CREATE TABLE adresses (
 	street VARCHAR(255) NOT NULL,
 	city VARCHAR(255) NOT NULL,
 	zip VARCHAR(255) NOT NULL,
+
+	CONSTRAINT chk_zip CHECK (zip like '[0-9][0-9]-[0-9][0-9][0-9]') 
 );
 
 CREATE TABLE workshops (
@@ -24,6 +26,7 @@ CREATE TABLE employees (
 	employee_id INT NOT NULL PRIMARY KEY,
 	firstname VARCHAR(255) NOT NULL,
 	lastname VARCHAR(255) NOT NULL,
+	birthdate DATE NOT NULL,
 	phone VARCHAR(255) NOT NULL,
 	salary INT NOT NULL CHECK(salary >= 0),
 	adress_id INT NOT NULL FOREIGN KEY REFERENCES adresses(adress_id),

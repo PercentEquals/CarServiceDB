@@ -1,0 +1,51 @@
+# From: https://getfakedata.com/address/pl_PL
+Okopowa 88A/67, 69-933 Sieradz
+Gdyńska 23, 87-223 Żyrardów
+Turkusowa 15A/64, 00-670 Pruszcz Gdański
+Górnośląska 78A, 93-074 Kraśnik
+Franciszkańska 54A/82, 56-422 Pisz
+Kossaka Juliusza 80/41, 85-891 Luboń
+Poprzeczna 15, 25-410 Starachowice
+Pułaskiego Kazimierza 19A, 20-806 Lubartów
+Grota-Roweckiego Stefana 13A, 17-760 Radom
+Bieszczadzka 48A/10, 56-353 Częstochowa
+Piłsudskiego Józefa 52, 29-908 Będzin
+Skośna 99A, 64-510 Pabianice
+Krzywa 75/68, 52-867 Jastarnia
+Pocztowa 62A, 30-345 Rybnik
+Solna 31A, 66-090 Białystok
+Bytomska 74A/99, 09-360 Piotrków Trybunalski
+Srebrna 45A/01, 65-623 Ostrołęka
+Broniewskiego Władysława 08A/22, 02-588 Studzienice
+Stwosza Wita 40A/16, 51-986 Skierniewice
+Nowowiejskiego Feliksa 42/16, 97-643 Łódź
+Rynek 33, 24-272 Skarżysko-Kamienna
+Norwida Cypriana Kamila 78/71, 21-431 Piła
+Legnicka 22/04, 35-473 Kraśnik
+Rzeczna 62/38, 73-085 Piotrków Trybunalski
+Wolności Pl. 88A/80, 03-471 Czarna Woda
+Barlickiego Norberta 04A, 58-908 Świecie
+Myśliwska 65A, 75-204 Wałbrzych
+Sosnowa 00A, 74-404 Lębork
+Prosta 91, 97-595 Elbląg
+Nowy Świat 11A, 71-605 Mokrzyska
+Lisia 59A, 20-852 Kołobrzeg
+Pułaskiego Kazimierza 63/98, 80-400 Marylka
+Rybna 22/17, 88-414 Lublin
+Olchowa 06, 44-175 Jasło
+Białostocka 35A/76, 28-997 Łęczna
+Brzozowa 30A/57, 04-966 Żory
+Leśmiana Bolesława 45/54, 18-233 Knurów
+Oświęcimska 58/52, 76-328 Kłodzko
+Gminna 88A/25, 42-489 Otwock
+Patriotów 81/79, 13-890 Kamieniec Ząbkowicki
+Szczecińska 47A, 32-578 Bieruń
+Krańcowa 90A, 05-145 Zawiercie
+Szarych Szeregów 43, 01-425 Boguszów-Gorce
+Podchorążych 34A/99, 32-619 Legnica
+Pola Wincentego 60, 93-487 Żory
+Kilińskiego Jana 47/28, 65-668 Racibórz
+Słowackiego Juliusza 37, 21-091 Piła
+Granitowa 04A, 77-284 Leszno
+Warmińska 67, 82-131 Bartoszyce
+Kusocińskiego Janusza 45A/08, 11-719 Starogard Gdański
