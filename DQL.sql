@@ -1,8 +1,8 @@
 USE CarService;
 
--- Data selects
+---- Data selects ----
 
--- 1. SELECT WORKSHOPS WITH THEIR addressES
+-- 1. SELECT WORKSHOPS WITH THEIR ADDRESSES
 SELECT W.workshop_id, A.street, A.city, A.zip FROM workshops W
 JOIN addresses A
 ON A.address_id = W.address_id
@@ -62,7 +62,7 @@ HAVING COUNT(V.vehicle_id) > 1
 -- 8. SELECT CLIENTS THAT HAVE MULTIPLE INSPECTIONS SCHEDULED
 -- TODO
 
--- Functions
+---- Functions ----
 
 -- 1. CALCULATE DISCOUNT
 IF object_id(N'calc_discount', N'FN') IS NOT NULL
@@ -70,14 +70,47 @@ IF object_id(N'calc_discount', N'FN') IS NOT NULL
 GO
 
 GO
-CREATE FUNCTION calc_discount(@client INT, @vehicle INT, @price FLOAT) RETURNS FLOAT
+CREATE FUNCTION calc_discount(@price FLOAT, @vehicle INT, @station INT) RETURNS FLOAT
 BEGIN
-	DECLARE @discount FLOAT = 0
-	RETURN @discount
+	DECLARE @new_price FLOAT = @price
+
+	-- Reduce if regular customer in the same workshop
+	DECLARE @how_many_in_same_workshop INT = (
+		SELECT COUNT(*) FROM inspections WHERE vehicle_id = @vehicle AND station_id IN (
+			SELECT station_id FROM stations WHERE workshop_id IN (
+				SELECT workshop_id FROM stations WHERE station_id = @station
+			)
+		)
+	)
+
+	IF @how_many_in_same_workshop >= 3
+		SET @new_price = @new_price - 20
+	ELSE IF @how_many_in_same_workshop >= 2
+		SET @new_price = @new_price - 10
+	ELSE IF @how_many_in_same_workshop >= 1
+		SET @new_price = @new_price - 5
+
+	RETURN @new_price
 END
+GO
 
+---- Triggers ----
 
--- Procedures
+-- 1. TRIGGER WHEN INSERTING A INSPECTION TO CALCULATE PRICE WITH DISCOUNT REDUCTION
+IF object_id('inspection_calc_discount', 'TR') IS NOT NULL  
+   DROP TRIGGER inspection_calc_discount;
+GO
+
+GO
+CREATE TRIGGER inspection_calc_discount ON inspections INSTEAD OF INSERT
+AS
+BEGIN
+	INSERT INTO inspections
+	SELECT startdate, enddate, dbo.calc_discount(price, vehicle_id, station_id), vehicle_mileage, station_id, vehicle_id FROM inserted
+END
+GO
+
+---- Procedures ----
 
 -- 1. CREATE SCHEDULE FOR STATION
 GO
