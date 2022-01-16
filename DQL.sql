@@ -157,10 +157,18 @@ BEGIN
 		WHEN 'Special' THEN '02:00:00.00'
     END 
 
+	DECLARE @price INT = CASE @vtype
+        WHEN 'Motor' THEN 50
+		WHEN 'Car' THEN 100
+		WHEN 'Taxi' THEN 200
+		WHEN 'Van' THEN 400
+		WHEN 'Special' THEN 1000
+    END 
+
 	DECLARE @dateend DATETIME = @datestart + CAST(@length AS DATETIME)
 
 	-- Check if there is available schedule for that date range (also checks if there are employees on that station)
-	SELECT S.schedule_id FROM schedule S
+	DECLARE @available_station INT = (SELECT TOP 1 S.station_id FROM schedule S
 	JOIN stations_employees E
 	ON S.station_id = E.station_id
 	WHERE S.station_id IN (
@@ -194,13 +202,26 @@ BEGIN
 			(startdate < @datestart AND enddate > @datestart)
 		)
 	)
-	GROUP BY S.schedule_id
-	HAVING COUNT(employee_id) > 0
+	GROUP BY S.station_id
+	HAVING COUNT(employee_id) > 0)
+
+	IF @available_station IS NOT NULL
+	BEGIN
+		INSERT INTO inspections VALUES (@datestart, @dateend, @price, NULL, @available_station, @vehicle)
+
+		PRINT CONCAT('Inspection has been scheduled [', CONVERT(varchar, @datestart), ' - ', CONVERT(varchar, @dateend), ']')
+	END
+	ELSE
+	BEGIN
+		PRINT CONCAT('Inspection could not be scheduled for given date and time! [', CONVERT(varchar, @datestart), ' - ', CONVERT(varchar, @dateend), ']')
+	END
 END
 GO
 
 BEGIN
+	SELECT * FROM inspections WHERE vehicle_id = 49
 	EXEC schedule_inspection 1, '20220102 8:00:00.00 AM', 49
+	SELECT * FROM inspections WHERE vehicle_id = 49
 
 	-- THERE IS ALREADY INSPECTION GOING ON
 	EXEC schedule_inspection 1, '20220101 8:00:00.00 AM', 49
