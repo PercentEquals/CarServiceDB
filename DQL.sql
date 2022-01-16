@@ -60,7 +60,40 @@ GROUP BY C.client_id, C.pesel
 HAVING COUNT(V.vehicle_id) > 1
 
 -- 8. SELECT CLIENTS THAT HAVE MULTIPLE INSPECTIONS SCHEDULED
--- TODO
+SELECT C.client_id, C.pesel, COUNT(*) AS [Inspections count] FROM clients C
+JOIN vehicles V
+ON V.client_id = C.client_id
+JOIN inspections I
+ON I.vehicle_id = V.vehicle_id
+GROUP BY C.client_id, C.pesel
+HAVING COUNT(*) > 1
+
+-- 9. SELECT LAST INSPECTION FOR EACH STATION
+SELECT I.startdate, I.enddate, I.price, I.vehicle_mileage, I.station_id, I.vehicle_id FROM inspections I
+JOIN stations S
+ON S.station_id = I.station_id
+WHERE I.enddate IN (SELECT MAX(enddate) FROM inspections GROUP BY station_id)
+GROUP BY I.startdate, I.enddate, I.price, I.vehicle_mileage, I.station_id, I.vehicle_id
+
+-- 10. SELECT NUMBER OF OPEN HOURS FOR EACH STATION
+SELECT station_id, 
+(
+	SELECT SUM(DATEDIFF(HH, startdate, enddate)) FROM schedule 
+	WHERE is_excluding = 0 
+	AND station_id = S.station_id
+) - 
+ISNULL
+(
+	(
+		SELECT SUM(DATEDIFF(HH, startdate, enddate)) FROM schedule 
+		WHERE is_excluding = 1 
+		AND station_id = S.station_id
+	)
+, 0) as [Number of open hours] FROM schedule S
+GROUP BY station_id
+
+-- 11. TODO
+
 
 ---- Functions ----
 
