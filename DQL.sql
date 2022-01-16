@@ -93,7 +93,7 @@ ISNULL
 GROUP BY station_id
 
 -- 11. TODO
-
+-- Idea: add select that will show vehicles that have smaller mileage now than in previous inspections (needs additional data in DML)
 
 ---- Functions ----
 
@@ -142,6 +142,33 @@ BEGIN
 	SELECT startdate, enddate, dbo.calc_discount(price, vehicle_id, station_id), vehicle_mileage, station_id, vehicle_id FROM inserted
 END
 GO
+
+-- 2. TRIGGER WHEN DELETING A INSPECTION TO ARCHIVE IT INSTEAD
+IF object_id('inspection_delete', 'TR') IS NOT NULL  
+   DROP TRIGGER inspection_delete;
+GO
+
+GO
+CREATE TRIGGER inspection_delete ON inspections AFTER DELETE
+AS
+BEGIN
+	INSERT INTO inspections_archive
+	SELECT DISTINCT D.startdate, D.enddate, D.price, D.vehicle_mileage, S.station_number, A.city, A.street, C.pesel, D.vehicle_id FROM deleted D
+	JOIN stations S ON S.station_id = D.station_id
+	JOIN workshops W ON W.workshop_id = S.workshop_id
+	JOIN addresses A ON A.address_id = W.address_id
+	JOIN vehicles V ON V.vehicle_id = D.vehicle_id
+	JOIN clients C ON C.client_id = V.client_id
+	WHERE D.enddate <= GETDATE() AND D.vehicle_mileage IS NOT NULL
+END
+GO
+
+BEGIN
+	DELETE FROM inspections WHERE startdate < GETDATE()
+	SELECT * FROM inspections_archive
+END
+
+-- Ideas: trigger to sanitize vehicle input data?
 
 ---- Procedures ----
 
@@ -297,5 +324,7 @@ BEGIN
 	EXEC schedule_inspection 1, '20220102 8:45:00.00 AM', 49
 	EXEC schedule_inspection 1, '20220102 9:30:00.00 AM', 49
 END
+
+-- TODO: one more procedure
 
 USE master;
