@@ -8,8 +8,8 @@ CREATE DATABASE CarService;
 GO
 USE CarService;
 
-CREATE TABLE adresses (
-	adress_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+CREATE TABLE addresses (
+	address_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	street VARCHAR(255) NOT NULL,
 	city VARCHAR(255) NOT NULL,
 	zip VARCHAR(255) NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE adresses (
 
 CREATE TABLE workshops (
 	workshop_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	adress_id INT NOT NULL FOREIGN KEY REFERENCES adresses(adress_id),
+	address_id INT NOT NULL FOREIGN KEY REFERENCES addresses(address_id),
 );
 
 CREATE TABLE employees (
@@ -30,7 +30,7 @@ CREATE TABLE employees (
 	birthdate DATE NOT NULL,
 	phone VARCHAR(255) NOT NULL,
 	salary INT NOT NULL CHECK(salary >= 0),
-	adress_id INT NOT NULL FOREIGN KEY REFERENCES adresses(adress_id),
+	address_id INT NOT NULL FOREIGN KEY REFERENCES addresses(address_id),
 
 	CONSTRAINT e_pesel CHECK (pesel NOT LIKE '%[^0-9]%'),
 	CONSTRAINT e_u_pesel UNIQUE(pesel),

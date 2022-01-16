@@ -1,6 +1,6 @@
 USE CarService;
 
-INSERT INTO adresses (street, city, zip) VALUES
+INSERT INTO addresses (street, city, zip) VALUES
 ('Okopowa 88A/67', 'Sieradz', '69-933'),
 ('Gdyńska 23', 'Żyrardów', '87-223'),
 ('Turkusowa 15A/64', 'Pruszcz Gdański', '00-670'),
@@ -52,7 +52,7 @@ INSERT INTO adresses (street, city, zip) VALUES
 ('Warmińska 67', 'Bartoszyce', '82-131'),
 ('Kusocińskiego Janusza 45A/08', 'Starogard Gdański', '11-719');
 
-INSERT INTO workshops (adress_id) VALUES 
+INSERT INTO workshops (address_id) VALUES 
 (41),
 (42),
 (43),
@@ -64,7 +64,7 @@ INSERT INTO workshops (adress_id) VALUES
 (49),
 (50);
 
-INSERT INTO employees (pesel, firstname, lastname, birthdate, phone, salary, adress_id) VALUES
+INSERT INTO employees (pesel, firstname, lastname, birthdate, phone, salary, address_id) VALUES
 ('89060274421', 'Ania', 'Kowalewska', '19890602 01:00:00 PM', '+48348024785', 3900, 21),
 ('70091812129', 'Grażyna', 'Wiśniewska', '19700918 01:00:00 PM', '+48703491321', 2800, 15),
 ('72041193619', 'Patryk', 'Kaczmarek', '19720411 01:00:00 PM', '+48380324020', 3200, 35),

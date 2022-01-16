@@ -2,10 +2,10 @@ USE CarService;
 
 -- Data selects
 
--- 1. SELECT WORKSHOPS WITH THEIR ADRESSES
+-- 1. SELECT WORKSHOPS WITH THEIR addressES
 SELECT W.workshop_id, A.street, A.city, A.zip FROM workshops W
-JOIN adresses A
-ON A.adress_id = W.adress_id
+JOIN addresses A
+ON A.address_id = W.address_id
 
 -- 2. SELECT WORKSHOPS WITH THEIR STATION AND EMPLOYEE COUNT
 SELECT W.workshop_id, COUNT(S.station_id) AS [Stations Count], COUNT(SE.station_id) AS [Employee Count] FROM workshops W
@@ -26,17 +26,17 @@ ON E.employee_id = SE.employee_id
 GROUP BY W.workshop_id
 
 -- 4. SELECT EMPLOYEES WITH THE CITY THEY LIVE IN AND WITH CITY THEY WORK IN
-SELECT E.pesel, CONCAT(E.firstname, ' ', lastname) AS [Firstname and lastname], E.birthdate, E.phone, E.salary, A.city AS [Lives in], WA.city AS [Works in] FROM employees E
-JOIN adresses A 
-ON A.adress_id = E.adress_id
+SELECT DISTINCT E.pesel, CONCAT(E.firstname, ' ', lastname) AS [Firstname and lastname], E.birthdate, E.phone, E.salary, A.city AS [Lives in], WA.city AS [Works in] FROM employees E
+JOIN addresses A 
+ON A.address_id = E.address_id
 JOIN stations_employees SE
 ON SE.employee_id = E.employee_id
 JOIN stations S
 ON S.station_id = SE.station_id
 JOIN workshops W
 ON W.workshop_id = S.workshop_id
-JOIN adresses WA
-ON WA.adress_id = W.adress_id
+JOIN addresses WA
+ON WA.address_id = W.address_id
 
 -- 5. SELECT EMPLOYEES THAT HAVE THE HIGHEST SALARY
 SELECT TOP 1 WITH TIES pesel, DATEDIFF(YY, birthdate, GETDATE()) AS [Age], salary FROM employees
