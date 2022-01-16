@@ -2,7 +2,7 @@ import random
 
 
 plates = ['ESI', 'ELA', 'EL', 'WW', 'SK', 'EPD', 'EZD', 'EBD', 'PO', 'EWI']
-vehicle_types = ['Ciężarówka', 'Policyjny', 'Taxi', 'Pogotowie', 'Wóz strażacki', 'Motor', 'Osobowy', 'Dostawczak']
+vehicle_types = ['Car', 'Special', 'Motor', 'Van', 'Taxi']
 
 
 with open("vehicles.txt", 'w', encoding="utf-8") as f:
@@ -11,6 +11,6 @@ with open("vehicles.txt", 'w', encoding="utf-8") as f:
         plate = random.choice(plates) + ' ' + str(random.randint(10000, 99999))
         vehicle_type = random.choice(vehicle_types)
         mileage = random.randint(20000, 500000)
-        f.write(f"({i+1}, {client_id}, '{vehicle_type}', '{plate}', {mileage}),\n")
+        f.write(f"({client_id}, '{vehicle_type}', '{plate}', {mileage}),\n")
 
 

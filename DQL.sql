@@ -64,10 +64,22 @@ HAVING COUNT(V.vehicle_id) > 1
 
 -- Functions
 
+-- 1. CALCULATE DISCOUNT
+IF object_id(N'calc_discount', N'FN') IS NOT NULL
+    DROP FUNCTION calc_discount
+GO
+
+GO
+CREATE FUNCTION calc_discount(@client INT, @vehicle INT, @price FLOAT) RETURNS FLOAT
+BEGIN
+	DECLARE @discount FLOAT = 0
+	RETURN @discount
+END
 
 
 -- Procedures
 
+-- 1. CREATE SCHEDULE FOR STATION
 GO
 IF EXISTS(SELECT 1 FROM sys.objects WHERE type='P' AND name='create_schedule') DROP PROCEDURE create_schedule
 
@@ -78,28 +90,125 @@ CREATE PROCEDURE create_schedule
 	@dateend DATE,
 	@starting_time TIME,
 	@ending_time TIME,
+	@exclude_weekdays INT = 1,
 	@is_excluding INT = 0
 AS
 BEGIN
-	WITH dateRange AS (
-		SELECT @datestart AS d
-		UNION ALL
-		SELECT DATEADD(day, 1, d)
+	IF @exclude_weekdays >= 1
+	BEGIN
+		WITH dateRange AS (
+			SELECT @datestart AS d
+			UNION ALL
+			SELECT DATEADD(day, 1, d)
+			FROM dateRange
+			WHERE DATEADD(day, 1, d) <= @dateend
+		)
+		INSERT INTO schedule
+		SELECT @station,
+			   (CAST(d AS DATETIME) + CAST(@starting_time AS DATETIME)) AS [startdate], 
+			   (CAST(d AS DATETIME) + CAST(@ending_time AS DATETIME)) AS [enddate],
+			   @is_excluding
 		FROM dateRange
-		WHERE DATEADD(day, 1, d) <= @dateend
-	)
-
-	INSERT INTO schedule
-	SELECT @station,
-		   (CAST(d AS DATETIME) + CAST(@starting_time AS DATETIME)) AS [startdate], 
-		   (CAST(d AS DATETIME) + CAST(@ending_time AS DATETIME)) AS [enddate],
-		   @is_excluding
-		   FROM dateRange OPTION (MAXRECURSION 0)
+		WHERE DATENAME(DW, d) != 'Saturday' AND DATENAME(DW, d) != 'Sunday'
+		OPTION (MAXRECURSION 0)
+	END
+	ELSE
+	BEGIN
+		WITH dateRange AS (
+			SELECT @datestart AS d
+			UNION ALL
+			SELECT DATEADD(day, 1, d)
+			FROM dateRange
+			WHERE DATEADD(day, 1, d) <= @dateend
+		)
+		INSERT INTO schedule
+		SELECT @station,
+			   (CAST(d AS DATETIME) + CAST(@starting_time AS DATETIME)) AS [startdate], 
+			   (CAST(d AS DATETIME) + CAST(@ending_time AS DATETIME)) AS [enddate],
+			   @is_excluding
+		FROM dateRange
+		OPTION (MAXRECURSION 0)
+	END
 END
 GO
 
 BEGIN
-	EXEC create_schedule 2, '20220101', '20220301', '08:30:00.00', '16:30:00.00'
+	EXEC create_schedule 2, '20220101', '20220201', '08:30:00.00', '16:30:00.00'
+END
+
+-- 2. SCHEDULE A INSPECTION 
+GO
+IF EXISTS(SELECT 1 FROM sys.objects WHERE type='P' AND name='schedule_inspection') DROP PROCEDURE schedule_inspection
+
+GO
+CREATE PROCEDURE schedule_inspection 
+	@workshop INT = 0,
+	@datestart DATETIME,
+	@vehicle INT = 0
+AS
+BEGIN
+	-- Calculate length and end date
+	DECLARE @vtype VARCHAR(255) = (SELECT vehicle_type FROM vehicles WHERE vehicle_id = @vehicle)
+	DECLARE @length TIME = CASE @vtype
+        WHEN 'Motor' THEN '00:30:00.00'
+		WHEN 'Car' THEN '01:00:00.00'
+		WHEN 'Taxi' THEN '01:00:00.00'
+		WHEN 'Van' THEN '01:30:00.00'
+		WHEN 'Special' THEN '02:00:00.00'
+    END 
+
+	DECLARE @dateend DATETIME = @datestart + CAST(@length AS DATETIME)
+
+	-- Check if there is available schedule for that date range (also checks if there are employees on that station)
+	SELECT S.schedule_id FROM schedule S
+	JOIN stations_employees E
+	ON S.station_id = E.station_id
+	WHERE S.station_id IN (
+		SELECT station_id FROM stations
+		WHERE workshop_id = @workshop
+	) 
+	AND startdate <= @datestart 
+	AND DATEDIFF(day, @datestart, startdate) = 0
+	AND enddate >= @dateend
+	AND is_excluding = 0
+	AND S.station_id NOT IN (
+		-- Check if there is an 'exclusion' - for example: break time
+		SELECT station_id FROM schedule
+		WHERE station_id = S.station_id
+		AND DATEDIFF(day, @datestart, startdate) = 0
+		AND is_excluding = 1
+		AND (
+			(startdate <= @datestart AND enddate >= @dateend) OR
+			(startdate < @dateend AND enddate >= @dateend) OR
+			(startdate <= @datestart AND enddate > @datestart)
+		)
+	)
+	AND S.station_id NOT IN (
+		-- Check if there is already an inspection that would collide
+		SELECT station_id FROM inspections
+		WHERE station_id = S.station_id
+		AND DATEDIFF(day, @datestart, startdate) = 0
+		AND (
+			(startdate <= @datestart AND enddate >= @dateend) OR
+			(startdate < @dateend AND enddate > @dateend) OR
+			(startdate < @datestart AND enddate > @datestart)
+		)
+	)
+	GROUP BY S.schedule_id
+	HAVING COUNT(employee_id) > 0
+END
+GO
+
+BEGIN
+	EXEC schedule_inspection 1, '20220102 8:00:00.00 AM', 49
+
+	-- THERE IS ALREADY INSPECTION GOING ON
+	EXEC schedule_inspection 1, '20220101 8:00:00.00 AM', 49
+	EXEC schedule_inspection 1, '20220101 9:30:00.00 AM', 49
+
+	-- EXCLUDED
+	EXEC schedule_inspection 1, '20220102 8:45:00.00 AM', 49
+	EXEC schedule_inspection 1, '20220102 9:30:00.00 AM', 49
 END
 
 USE master;

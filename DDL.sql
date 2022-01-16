@@ -73,6 +73,8 @@ CREATE TABLE vehicles (
 	vehicle_type VARCHAR(255) NOT NULL,
 	plate VARCHAR(255) NOT NULL,
 	mileage INT NOT NULL CHECK(mileage >= 0),
+
+	CONSTRAINT u_plate UNIQUE(plate),
 );
 
 CREATE TABLE inspections (
