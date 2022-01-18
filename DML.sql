@@ -268,6 +268,7 @@ INSERT INTO vehicles (client_id, vehicle_type, plate, mileage) VALUES
 INSERT INTO inspections (startdate, enddate, price, vehicle_mileage, station_id, vehicle_id) VALUES
 ('20230101 08:00:00 AM', '20230101 10:00:00 AM', 100, NULL, 1, 1),
 ('20230101 10:00:00 AM', '20230101 11:00:00 AM', 100, NULL, 1, 2),
+('20240101 08:00:00 AM', '20240101 10:00:00 AM', 100, 300000, 1, 1),
 ('20210101 10:00:00 AM', '20210101 11:00:00 AM', 100, 400186, 1, 1);
 
 INSERT INTO inspections_archive (startdate, enddate, price, vehicle_mileage, station_number, workshop_city, workshop_street, client_pesel, vehicle_id) VALUES

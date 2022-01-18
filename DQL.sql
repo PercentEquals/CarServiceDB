@@ -89,11 +89,48 @@ ISNULL
 		WHERE is_excluding = 1 
 		AND station_id = S.station_id
 	)
-, 0) as [Number of open hours] FROM schedule S
+, 0) AS [Number of open hours] FROM schedule S
 GROUP BY station_id
 
--- 11. TODO
--- Idea: add select that will show vehicles that have smaller mileage now than in previous inspections (needs additional data in DML)
+-- 11. EMPLOYEES WHO EARN MORE SALARY THAN AVERAGE OF ALL
+SELECT E.employee_id, E.firstname, E.lastname, E.salary FROM employees E
+WHERE E.salary > 
+(
+	SELECT AVG(salary) FROM employees
+) 
+ORDER BY E.salary DESC
+
+-- 12. SELECT NUMBER OF INSPECTIONS THAT EACH CAR EVER HAD
+SELECT V.vehicle_id, COUNT(*) + 
+(
+	SELECT COUNT(*) FROM inspections_archive 
+	WHERE V.vehicle_id = vehicle_id
+) AS [Number of inspections] FROM vehicles V
+JOIN inspections I
+ON I.vehicle_id = V.vehicle_id
+GROUP BY V.vehicle_id
+
+-- 13. SELECT VEHICLES THAT HAVE LOWER MILEAGE THAN DURING LAST INSPECTION (FAKING MILEAGE)
+SELECT I.vehicle_id FROM inspections I
+LEFT JOIN inspections_archive IA
+ON IA.vehicle_id = I.vehicle_id
+WHERE I.vehicle_mileage < IA.vehicle_mileage
+
+-- 14. SELECT HOW MANY INSPECTIONS WERE THERE EACH MONTH IN YEAR 2021
+SELECT MONTH(enddate) AS [Month], COUNT(*) + 
+(
+	SELECT COUNT(*) FROM inspections_archive 
+	WHERE I.vehicle_id = vehicle_id 
+	AND MONTH(enddate) = MONTH(I.enddate)
+) AS [Number of inspections] FROM inspections I
+WHERE YEAR(enddate) = 2021
+GROUP BY MONTH(enddate), I.vehicle_id
+
+-- 15. SELECT NUMBER OF EMPLOYEES WHO LIVE IN THE SAME CITY
+SELECT A.city, COUNT(*) AS [Number of people] FROM employees E
+JOIN addresses A
+ON A.address_id = E.address_id
+GROUP BY A.city
 
 ---- Functions ----
 
