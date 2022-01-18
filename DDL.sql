@@ -69,7 +69,7 @@ CREATE TABLE clients (
 
 CREATE TABLE vehicles (
 	vehicle_id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	client_id INT NOT NULL FOREIGN KEY REFERENCES clients(client_id),
+	client_id INT FOREIGN KEY REFERENCES clients(client_id),
 	vehicle_type VARCHAR(255) NOT NULL,
 	plate VARCHAR(255) NOT NULL,
 	mileage INT NOT NULL CHECK(mileage >= 0),

@@ -156,7 +156,10 @@ INSERT INTO schedule (station_id, startdate, enddate, is_excluding) VALUES
 (1, '20220119 08:00:00 AM', '20220119 4:00:00 PM', 0),
 (1, '20220120 08:00:00 AM', '20220120 4:00:00 PM', 0),
 (1, '20230101 08:00:00 AM', '20230101 4:00:00 PM', 0),
-(1, '20240101 08:00:00 AM', '20240101 4:00:00 PM', 0);
+(1, '20240101 08:00:00 AM', '20240101 4:00:00 PM', 0),
+(1, '20230101 08:00:00 AM', '20230101 4:00:00 PM', 0),
+(1, '20230102 08:00:00 AM', '20230102 4:00:00 PM', 0),
+(1, '20230102 09:00:00 AM', '20230102 10:00:00 AM', 1);
 
 INSERT INTO clients (pesel, firstname, lastname, phone) VALUES
 ('85101824442', 'Klaudia', 'Szymańska', '+48603225201'),
@@ -246,7 +249,7 @@ INSERT INTO vehicles (client_id, vehicle_type, plate, mileage) VALUES
 (8, 'Special', 'WW 32360', 273756),
 (38, 'Van', 'EZD 55618', 206886),
 (37, 'Car', 'ELA 30331', 21067),
-(29, 'Osobowy', 'EZD 36300', 159166),
+(29, 'Car', 'EZD 36300', 159166),
 (31, 'Motor', 'ESI 70965', 494897),
 (40, 'Car', 'EWI 60746', 438672),
 (7, 'Car', 'EWI 99525', 61956),
@@ -263,8 +266,8 @@ INSERT INTO vehicles (client_id, vehicle_type, plate, mileage) VALUES
 (8, 'Car', 'EWI 84642', 221740);
 
 INSERT INTO inspections (startdate, enddate, price, vehicle_mileage, station_id, vehicle_id) VALUES
-('20220101 08:00:00 AM', '20220101 10:00:00 AM', 100, NULL, 1, 1),
-('20220101 10:00:00 AM', '20220101 11:00:00 AM', 100, NULL, 1, 2),
+('20230101 08:00:00 AM', '20230101 10:00:00 AM', 100, NULL, 1, 1),
+('20230101 10:00:00 AM', '20230101 11:00:00 AM', 100, NULL, 1, 2),
 ('20210101 10:00:00 AM', '20210101 11:00:00 AM', 100, 400186, 1, 1);
 
 INSERT INTO inspections_archive (startdate, enddate, price, vehicle_mileage, station_number, workshop_city, workshop_street, client_pesel, vehicle_id) VALUES

@@ -168,8 +168,6 @@ BEGIN
 	SELECT * FROM inspections_archive
 END
 
--- Ideas: trigger to sanitize vehicle input data?
-
 ---- Procedures ----
 
 -- 1. CREATE SCHEDULE FOR STATION
@@ -237,9 +235,18 @@ GO
 CREATE PROCEDURE schedule_inspection 
 	@workshop INT = 0,
 	@datestart DATETIME,
-	@vehicle INT = 0
+	@vehicle INT = 0,
+	@success INT OUTPUT
 AS
 BEGIN
+	-- Check if date is not in the past
+	IF @datestart < GETDATE()
+	BEGIN
+		SET @success = 0
+		PRINT CONCAT('Inspection cannot be scheduled in the past! [', CONVERT(varchar, @datestart), ']')
+		RETURN
+	END
+
 	-- Calculate length and end date
 	DECLARE @vtype VARCHAR(255) = (SELECT vehicle_type FROM vehicles WHERE vehicle_id = @vehicle)
 	DECLARE @length TIME = CASE @vtype
@@ -301,30 +308,102 @@ BEGIN
 	IF @available_station IS NOT NULL
 	BEGIN
 		INSERT INTO inspections VALUES (@datestart, @dateend, @price, NULL, @available_station, @vehicle)
-
+		SET @success = 1
 		PRINT CONCAT('Inspection has been scheduled [', CONVERT(varchar, @datestart), ' - ', CONVERT(varchar, @dateend), ']')
 	END
 	ELSE
 	BEGIN
+		SET @success = 0
 		PRINT CONCAT('Inspection could not be scheduled for given date and time! [', CONVERT(varchar, @datestart), ' - ', CONVERT(varchar, @dateend), ']')
 	END
 END
 GO
 
 BEGIN
-	SELECT * FROM inspections WHERE vehicle_id = 49
-	EXEC schedule_inspection 1, '20220102 8:00:00.00 AM', 49
-	SELECT * FROM inspections WHERE vehicle_id = 49
+	DECLARE @success_flag INT
+	DECLARE @vehicle INT = 49
+
+	-- SELECT * FROM inspections WHERE vehicle_id = @vehicle
+	EXEC schedule_inspection 1, '20230102 8:00:00.00 AM', @vehicle, @success_flag OUTPUT
+	-- SELECT * FROM inspections WHERE vehicle_id = @vehicle
 
 	-- THERE IS ALREADY INSPECTION GOING ON
-	EXEC schedule_inspection 1, '20220101 8:00:00.00 AM', 49
-	EXEC schedule_inspection 1, '20220101 9:30:00.00 AM', 49
+	EXEC schedule_inspection 1, '20230101 8:00:00.00 AM', @vehicle, @success_flag OUTPUT
+	EXEC schedule_inspection 1, '20230101 9:30:00.00 AM', @vehicle, @success_flag OUTPUT
 
 	-- EXCLUDED
-	EXEC schedule_inspection 1, '20220102 8:45:00.00 AM', 49
-	EXEC schedule_inspection 1, '20220102 9:30:00.00 AM', 49
+	EXEC schedule_inspection 1, '20230102 8:45:00.00 AM', @vehicle, @success_flag OUTPUT
+	EXEC schedule_inspection 1, '20230102 9:30:00.00 AM', @vehicle, @success_flag OUTPUT
+
+	-- IN PAST
+	EXEC schedule_inspection 1, '20200103 8:45:00.00 AM', @vehicle, @success_flag OUTPUT
 END
 
 -- TODO: one more procedure
+
+---- More triggers ----
+
+-- 3. TRIGGER INSTEAD OF UPDATING A INSPECTION TO USE schedule_inspection PROCEDURE
+IF object_id('inspection_update', 'TR') IS NOT NULL  
+   DROP TRIGGER inspection_update;
+GO
+
+GO
+CREATE TRIGGER inspection_update ON inspections INSTEAD OF UPDATE
+AS
+BEGIN
+	-- Success flag
+	DECLARE @inspection_success_flag INT
+
+	-- Cursor init
+	DECLARE ins_cursor CURSOR FOR
+	SELECT inspection_id, startdate, enddate, station_id, vehicle_id FROM inserted
+	DECLARE @workshop_id INT, @inspection_id INT, @startdate DATETIME, @enddate DATETIME, @station_id INT, @vehicle_id INT
+
+
+	OPEN ins_cursor
+	FETCH NEXT FROM ins_cursor INTO @inspection_id, @startdate, @enddate, @station_id, @vehicle_id
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		BEGIN TRANSACTION
+		-- Remove old schedule so it does not intervene with 'schedule_inspection' procedure
+		DELETE FROM inspections WHERE inspection_id = @inspection_id
+
+		-- Try to schedule new date
+		SET @workshop_id = (SELECT workshop_id FROM stations WHERE station_id = @station_id)
+		EXEC schedule_inspection @workshop_id, @startdate, @vehicle_id, @inspection_success_flag OUTPUT
+
+		-- Check if new date has been scheduled...
+		IF @inspection_success_flag >= 1
+		BEGIN
+			-- ... if yes, commit changes
+			COMMIT
+			PRINT CONCAT('Successfully rescheduled inspection [', CONVERT(varchar, @startdate), ' - ', CONVERT(varchar, @enddate), ']')
+		END
+		ELSE
+		BEGIN
+			-- ... if not rollback to previous date
+			ROLLBACK
+			PRINT CONCAT('Inspection could not be rescheduled to target date! [', CONVERT(varchar, @startdate), ' - ', CONVERT(varchar, @enddate), ']')
+		END
+
+		FETCH NEXT FROM ins_cursor INTO @inspection_id, @startdate, @enddate, @station_id, @vehicle_id
+	END
+
+	-- Cleanup
+	CLOSE ins_cursor
+	DEALLOCATE ins_cursor
+END
+GO
+
+BEGIN
+	SELECT * FROM inspections
+
+	-- Rollback
+	UPDATE inspections SET startdate = '20210101 10:00:00.000' WHERE inspection_id = 1
+
+	-- Success
+	UPDATE inspections SET startdate = '20230102 12:00:00.000' WHERE inspection_id = 1
+END
 
 USE master;
