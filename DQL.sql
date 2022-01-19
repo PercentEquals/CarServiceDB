@@ -140,16 +140,26 @@ IF object_id(N'calc_discount', N'FN') IS NOT NULL
 GO
 
 GO
-CREATE FUNCTION calc_discount(@price FLOAT, @vehicle INT, @station INT) RETURNS FLOAT
+CREATE FUNCTION calc_discount(@price FLOAT, @vehicle INT, @station INT, @startdate DATETIME) RETURNS FLOAT
 BEGIN
 	DECLARE @new_price FLOAT = @price
 
+	DECLARE @client_id INT = (SELECT client_id FROM vehicles WHERE vehicle_id = @vehicle)
+	DECLARE @workshop_id INT = (SELECT workshop_id FROM stations WHERE station_id = @station)
+
 	-- Reduce if regular customer in the same workshop
 	DECLARE @how_many_in_same_workshop INT = (
-		SELECT COUNT(*) FROM inspections WHERE vehicle_id = @vehicle AND station_id IN (
-			SELECT station_id FROM stations WHERE workshop_id IN (
-				SELECT workshop_id FROM stations WHERE station_id = @station
-			)
+		SELECT COUNT(*) 
+		FROM inspections_archive 
+		WHERE vehicle_id = @vehicle 
+		AND workshop_city = (
+			SELECT city FROM addresses WHERE address_id = (SELECT address_id FROM workshops WHERE workshop_id = @workshop_id)
+		)
+		AND workshop_street = (
+			SELECT street FROM addresses WHERE address_id = (SELECT address_id FROM workshops WHERE workshop_id = @workshop_id)
+		)
+		AND client_pesel = (
+			SELECT pesel FROM clients WHERE client_id = (SELECT client_id FROM vehicles WHERE vehicle_id = @vehicle)
 		)
 	)
 
@@ -159,6 +169,25 @@ BEGIN
 		SET @new_price = @new_price - 10
 	ELSE IF @how_many_in_same_workshop >= 1
 		SET @new_price = @new_price - 5
+
+	-- Reduce if customer have already scheduled another inspection for other vehicle this month
+	DECLARE @other_schedules INT = (
+		SELECT COUNT(*)
+		FROM inspections
+		WHERE vehicle_id != @vehicle
+		AND vehicle_id IN (SELECT vehicle_id FROM vehicles WHERE client_id = @client_id)
+		AND startdate >= GETDATE()
+		AND DATEDIFF(month, startdate, @startdate) = 0
+	)
+
+	IF @other_schedules >= 2
+		SET @new_price = @new_price - 20
+	ELSE IF @how_many_in_same_workshop >= 1
+		SET @new_price = @new_price - 10
+
+	-- Limit reduction to 50% max
+	IF @new_price <= 0.5 * @price
+		SET @new_price = 0.5 * @price
 
 	RETURN @new_price
 END
@@ -176,7 +205,7 @@ CREATE TRIGGER inspection_calc_discount ON inspections INSTEAD OF INSERT
 AS
 BEGIN
 	INSERT INTO inspections
-	SELECT startdate, enddate, dbo.calc_discount(price, vehicle_id, station_id), vehicle_mileage, station_id, vehicle_id FROM inserted
+	SELECT startdate, enddate, dbo.calc_discount(price, vehicle_id, station_id, startdate), vehicle_mileage, station_id, vehicle_id FROM inserted
 END
 GO
 
@@ -292,7 +321,7 @@ BEGIN
 		WHEN 'Taxi' THEN '01:00:00.00'
 		WHEN 'Van' THEN '01:30:00.00'
 		WHEN 'Special' THEN '02:00:00.00'
-    END 
+	END
 
 	DECLARE @price INT = CASE @vtype
         WHEN 'Motor' THEN 50
@@ -300,7 +329,7 @@ BEGIN
 		WHEN 'Taxi' THEN 200
 		WHEN 'Van' THEN 400
 		WHEN 'Special' THEN 1000
-    END 
+	END
 
 	DECLARE @dateend DATETIME = @datestart + CAST(@length AS DATETIME)
 
@@ -360,9 +389,7 @@ BEGIN
 	DECLARE @success_flag INT
 	DECLARE @vehicle INT = 49
 
-	-- SELECT * FROM inspections WHERE vehicle_id = @vehicle
 	EXEC schedule_inspection 1, '20230102 8:00:00.00 AM', @vehicle, @success_flag OUTPUT
-	-- SELECT * FROM inspections WHERE vehicle_id = @vehicle
 
 	-- THERE IS ALREADY INSPECTION GOING ON
 	EXEC schedule_inspection 1, '20230101 8:00:00.00 AM', @vehicle, @success_flag OUTPUT
@@ -415,13 +442,13 @@ BEGIN
 		BEGIN
 			-- ... if yes, commit changes
 			COMMIT
-			PRINT CONCAT('Successfully rescheduled inspection [', CONVERT(varchar, @startdate), ' - ', CONVERT(varchar, @enddate), ']')
+			PRINT CONCAT('Successfully rescheduled inspection [', CONVERT(varchar, @startdate), ']')
 		END
 		ELSE
 		BEGIN
-			-- ... if not rollback to previous date
+			-- ... if not, rollback to previous date
 			ROLLBACK
-			PRINT CONCAT('Inspection could not be rescheduled to target date! [', CONVERT(varchar, @startdate), ' - ', CONVERT(varchar, @enddate), ']')
+			PRINT CONCAT('Inspection could not be rescheduled to target date! [', CONVERT(varchar, @startdate), ']')
 		END
 
 		FETCH NEXT FROM ins_cursor INTO @inspection_id, @startdate, @enddate, @station_id, @vehicle_id
@@ -434,13 +461,13 @@ END
 GO
 
 BEGIN
-	SELECT * FROM inspections
-
 	-- Rollback
-	UPDATE inspections SET startdate = '20210101 10:00:00.000' WHERE inspection_id = 1
+	UPDATE inspections SET startdate = '20210101 10:00:00.000 AM' WHERE inspection_id = 1
 
 	-- Success
-	UPDATE inspections SET startdate = '20230102 12:00:00.000' WHERE inspection_id = 1
+	UPDATE inspections SET startdate = '20230102 2:00:00.000 PM' WHERE inspection_id = 1
 END
+
+SELECT * FROM inspections
 
 USE master;
