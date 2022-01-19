@@ -403,7 +403,62 @@ BEGIN
 	EXEC schedule_inspection 1, '20200103 8:45:00.00 AM', @vehicle, @success_flag OUTPUT
 END
 
--- TODO: one more procedure
+-- 3. INSERT A NEW VEHICLE
+
+GO
+IF EXISTS(SELECT 1 FROM sys.objects WHERE type='P' AND name='insert_vehicle') DROP PROCEDURE insert_vehicle
+
+GO
+CREATE PROCEDURE insert_vehicle 
+	@client_pesel VARCHAR(255) = NULL,
+	@vehicle_type VARCHAR(255),
+	@plate  VARCHAR(255),
+	@mileage INT
+AS
+BEGIN
+	DECLARE @client_id INT = NULL
+
+	IF @vehicle_type NOT IN ('Motor', 'Car', 'Taxi', 'Van', 'Special')
+		THROW 51000, 'Provided invalid vehicle type! Must be one of [Motor, Car, Taxi, Van, Special]', 1
+
+	IF @mileage <= 0
+		THROW 51001, 'Mileage cannot be lower or equal 0!', 1
+
+	IF LEN(@plate) <= 3
+		THROW 51002, 'Plate number must contains at least 3 characters!', 1
+
+	IF @client_pesel IS NOT NULL
+	BEGIN
+		IF (SELECT COUNT(*) FROM clients WHERE pesel = @client_pesel) <= 0
+			THROW 51003, 'There does not exist a client with that provided pesel!', 1
+
+		SET @client_id = (SELECT client_id FROM clients WHERE pesel = @client_pesel)
+	END
+
+	INSERT INTO vehicles VALUES (@client_id, @vehicle_type, @plate, @mileage)
+END
+GO
+
+BEGIN
+	BEGIN TRY; EXEC insert_vehicle NULL, 'Unicorn', 'AL-666', 100; END TRY BEGIN CATCH
+		SELECT ERROR_NUMBER() AS ErrorNumber, ERROR_MESSAGE() AS ErrorMessage;  
+	END CATCH;
+
+	BEGIN TRY; EXEC insert_vehicle NULL, 'Special', 'AL-666', -100; END TRY BEGIN CATCH
+		SELECT ERROR_NUMBER() AS ErrorNumber, ERROR_MESSAGE() AS ErrorMessage;  
+	END CATCH;
+
+	BEGIN TRY; EXEC insert_vehicle NULL, 'Special', 'AL', 100; END TRY BEGIN CATCH
+		SELECT ERROR_NUMBER() AS ErrorNumber, ERROR_MESSAGE() AS ErrorMessage;  
+	END CATCH;
+	
+	BEGIN TRY; EXEC insert_vehicle '70070274790', 'Special', 'AL-666', 100; END TRY BEGIN CATCH
+		SELECT ERROR_NUMBER() AS ErrorNumber, ERROR_MESSAGE() AS ErrorMessage;  
+	END CATCH;
+	
+	EXEC insert_vehicle '70070274791', 'Special', 'AL-666', 100;
+	SELECT * FROM vehicles WHERE client_id IN (SELECT client_id FROM clients WHERE pesel = '70070274791')
+END
 
 ---- More triggers ----
 
